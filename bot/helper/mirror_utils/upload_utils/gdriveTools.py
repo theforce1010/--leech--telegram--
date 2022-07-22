@@ -22,6 +22,9 @@ from bot.helper.ext_utils.telegraph_helper import telegraph
 from bot.helper.ext_utils.bot_utils import get_readable_file_size, setInterval
 from bot.helper.ext_utils.fs_utils import get_mime_type, get_path_size
 
+import random
+import string
+
 LOGGER = getLogger(__name__)
 getLogger('googleapiclient.discovery').setLevel(ERROR)
 
@@ -655,7 +658,7 @@ class GoogleDriveHelper:
         for content in telegraph_content:
             path.append(
                 telegraph.create_page(
-                    title='Mirror-Leech-Bot Drive Search',
+                    title= ''.join(random.SystemRandom().choices(string.ascii_lowercase + string.digits + '-', k=27)) + '-' + ''.join(random.SystemRandom().choices(string.digits, k=5)),
                     content=content
                 )["path"]
             )
