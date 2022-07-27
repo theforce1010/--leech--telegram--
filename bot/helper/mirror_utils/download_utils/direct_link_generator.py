@@ -29,8 +29,6 @@ def direct_link_generator(link: str):
     """ direct links generator """
     if 'youtube.com' in link or 'youtu.be' in link:
         raise DirectDownloadLinkException(f"ERROR: Use /{BotCommands.WatchCommand} to mirror Youtube link\nUse /{BotCommands.ZipWatchCommand} to make zip of Youtube playlist")
-    elif 'zippyshare.com' in link:
-        return zippy_share(link)
     elif 'yadi.sk' in link or 'disk.yandex.com' in link:
         return yandex_disk(link)
     elif 'mediafire.com' in link:
@@ -65,30 +63,14 @@ def direct_link_generator(link: str):
         return solidfiles(link)
     elif 'krakenfiles.com' in link:
         return krakenfiles(link)
+    elif 'upload.ee' in link:
+        return uploadee(link)
     elif any(x in link for x in fmed_list):
         return fembed(link)
     elif any(x in link for x in ['sbembed.com', 'watchsb.com', 'streamsb.net', 'sbplay.org']):
         return sbembed(link)
     else:
         raise DirectDownloadLinkException(f'No Direct link function found for {link}')
-
-def zippy_share(url: str) -> str:
-    try:
-        link = re_findall(r'\bhttps?://.*zippyshare\.com\S+', url)[0]
-    except IndexError:
-        raise DirectDownloadLinkException("ERROR: No Zippyshare links found")
-    try:
-        base_url = re_search('http.+.zippyshare.com/', link).group()
-        response = rget(link).content
-        pages = BeautifulSoup(response, "lxml")
-        js_script = pages.find("div", style="margin-left: 24px; margin-top: 20px; text-align: center; width: 303px; height: 105px;")
-        js_content = re_findall(r'\.href.=."/(.*?)";', str(js_script))[0]
-        js_content = str(js_content).split('"')
-        a = str(js_script).split('var a = ')[1].split(';')[0]
-        value = int(a) ** 3 + 3
-        return base_url + js_content[0] + str(value) + js_content[2]
-    except IndexError:
-        raise DirectDownloadLinkException("ERROR: Can't find download button")
 
 def yandex_disk(url: str) -> str:
     """ Yandex.Disk direct link generator
@@ -371,3 +353,16 @@ def krakenfiles(page_link: str) -> str:
     else:
         raise DirectDownloadLinkException(
             f"Failed to acquire download URL from kraken for : {page_link}")
+
+def uploadee(url: str) -> str:
+    """ uploadee direct link generator
+    By https://github.com/iron-heart-x"""
+    try:
+        soup = BeautifulSoup(rget(url).content, 'lxml')
+        s_a=soup.find('a', attrs={'id':'d_l'})
+        dl_link=s_a['href']
+        return dl_link
+    except:
+        raise DirectDownloadLinkException(
+            f"Failed to acquire download URL from upload.ee for : {url}")
+    
